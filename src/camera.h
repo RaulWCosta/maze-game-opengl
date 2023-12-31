@@ -77,9 +77,9 @@ public:
 
         float velocity = MovementSpeed * deltaTime;
         if (direction == FORWARD)
-            Position += frontMovement * velocity;
+            Position += Front * velocity;
         if (direction == BACKWARD)
-            Position -= frontMovement * velocity;
+            Position -= Front * velocity;
         if (direction == LEFT)
             Position -= Right * velocity;
         if (direction == RIGHT)
@@ -134,7 +134,7 @@ private:
         // Up    = glm::vec3(0.0, 1.0, 0.0); // 
         Up = glm::normalize(glm::cross(Right, Front));
 
-        // std::cout << "(" << front.x << ", " << front.y << ", " << front.z << ")" << std::endl;
+        std::cout << "(" << front.x << ", " << front.y << ", " << front.z << ")" << std::endl;
     }
 };
 #endif
