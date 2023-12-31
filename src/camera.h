@@ -134,7 +134,7 @@ private:
         // Up    = glm::vec3(0.0, 1.0, 0.0); // 
         Up = glm::normalize(glm::cross(Right, Front));
 
-        std::cout << "(" << front.x << ", " << front.y << ", " << front.z << ")" << std::endl;
+        // std::cout << "(" << front.x << ", " << front.y << ", " << front.z << ")" << std::endl;
     }
 };
 #endif

@@ -87,20 +87,39 @@ namespace Cube {
         return std::make_tuple(VAO, VBO);
     }
 
-    std::vector<glm::vec3> get_positions(const char *maze) {
-        // TODO implement
-        std::vector<glm::vec3> cubePositions = {
-            glm::vec3( 0.0f, 0.0f,  0.0f),
-            glm::vec3( 2.0f, 0.0f, -15.0f),
-            glm::vec3(-1.5f, 0.0f, -2.5f),
-            glm::vec3(-3.8f, 0.0f, -12.3f),
-            glm::vec3( 2.4f, 0.0f, -3.5f),
-            glm::vec3(-1.7f, 0.0f, -7.5f),
-            glm::vec3( 1.3f, 0.0f, -2.5f),
-            glm::vec3( 1.5f, 0.0f, -2.5f),
-            glm::vec3( 1.5f, 0.0f, -1.5f),
-            glm::vec3(-1.3f, 0.0f, -1.5f)
-        };
+    glm::vec3 get_camera_position(const char **maze, int width, int depth) {
+
+        std::vector<glm::vec3> cubePositions;
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < depth; j++) {
+                // std::cout << maze[i][j] << std::endl; 
+
+                if (maze[i][j] == 'c') {
+                    float x = (float) (i - (int) (width/2));
+                    float z = (float) (j - (int) (depth/2));
+                    return glm::vec3(x, 0.0f, z);
+                }
+            }
+        }
+    }
+
+    std::vector<glm::vec3> get_positions(const char **maze, int width, int depth) {
+
+        std::vector<glm::vec3> cubePositions;
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < depth; j++) {
+                // std::cout << maze[i][j] << std::endl; 
+
+                if (maze[i][j] == 'x') {
+                    float x = (float) (i - (int) (width/2));
+                    float z = (float) (j - (int) (depth/2));
+                    cubePositions.push_back(glm::vec3(x, 0.0f, z)); 
+                }
+            }
+        }
+
         return cubePositions;
     }
 

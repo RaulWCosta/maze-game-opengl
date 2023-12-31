@@ -53,7 +53,7 @@ namespace Floor {
     glm::mat4 get_model_mat(unsigned int maze_width, unsigned int maze_depth) {
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         float angle = 90.0f;
-        model = glm::translate(model, glm::vec3(0.0, -0.5, -10.0));
+        model = glm::translate(model, glm::vec3(0.0, -0.5, 0.0));
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::scale(model, glm::vec3((float)maze_width, (float)maze_depth, 0.0));
         return model;

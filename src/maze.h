@@ -2,28 +2,26 @@
 
 #include <tuple>
 
-const char *get_maze() {
-    return "xxxxx\n"
-           "x...x\n"
-           "x...x\n"
-           "x...x\n"
-           "xxxxx\n\0";
-}
+std::tuple<const char **, int, int> get_maze() {
+    const char* maze[] = {
+        "xxxxx",
+        "x...x",
+        "x.c.x",
+        "x...x",
+        "xxxxx",
+    };
 
-std::tuple<unsigned int, unsigned int> get_maze_dimensions(const char *maze) {
-    unsigned int width, depth = 0;
+    // Determine the number of strings in the array
+    const int numStrings = sizeof(maze) / sizeof(maze[0]);
 
-    int i = 0;
-    while (maze[i] != '\n')    
-        i++;
-    width = i;
+    // Allocate memory for an array of char pointers on the heap
+    const char** mazeOnHeap = new const char*[numStrings];
 
-    i = 0;
-    while (maze[i] != '\0') {
-        if (maze[i] == '\n')
-            depth++;    
-        i++;
+    // Allocate memory for each string and copy the content
+    for (int i = 0; i < numStrings; ++i) {
+        mazeOnHeap[i] = new char[strlen(maze[i]) + 1]; // +1 for the null terminator
+        strcpy(const_cast<char*>(mazeOnHeap[i]), maze[i]);
     }
 
-    return std::make_tuple(width, depth);
+    return std::make_tuple(mazeOnHeap, numStrings, numStrings);
 }

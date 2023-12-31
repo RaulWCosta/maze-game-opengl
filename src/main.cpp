@@ -93,8 +93,11 @@ int main()
     int floor_vertices_size;
     std::tie(floor_vertices, floor_vertices_size) = Floor::get_vertices();
 
-    const char *maze = get_maze();
-    std::vector<glm::vec3> cubePositions = Cube::get_positions(maze);
+    const char **maze;
+    int maze_width, maze_depth;
+    std::tie(maze, maze_width, maze_depth) = get_maze();
+
+    std::vector<glm::vec3> cubePositions = Cube::get_positions(maze, maze_width, maze_depth);
 
     unsigned int cubeVAO, cubeVBO;
     std::tie(cubeVAO, cubeVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
@@ -102,8 +105,7 @@ int main()
     unsigned int floorVAO, floorVBO;
     std::tie(floorVAO, floorVBO) = Floor::get_buffers(floor_vertices, floor_vertices_size);
 
-    unsigned int maze_width, maze_depth;
-    std::tie(maze_width, maze_depth) = get_maze_dimensions(maze);
+    camera.Position = Cube::get_camera_position(maze, maze_width, maze_depth);
 
     // // load and create a texture 
     // // -------------------------
@@ -200,7 +202,7 @@ int main()
 
         // render boxes
         glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < 10; i++)
+        for (unsigned int i = 0; i < cubePositions.size(); i++)
         {
             // calculate the model matrix for each object and pass it to shader before drawing
             glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
