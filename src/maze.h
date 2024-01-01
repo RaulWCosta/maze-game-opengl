@@ -4,11 +4,15 @@
 
 std::tuple<const char **, int, int> get_maze() {
     const char* maze[] = {
-        "xxxxx",
-        "x...x",
-        "x.c.x",
-        "x...x",
-        "xxxxx",
+        "xxxx..x..",
+        "x.....x..",
+        "x.....x..",
+        "x.....x..",
+        "xxxx..x..",
+        "...x..x..",
+        "xxxx..x..",
+        "x.c...x..",
+        "xxxxxxx..",
     };
 
     // Determine the number of strings in the array

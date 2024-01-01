@@ -19,7 +19,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, const char **maze, int maze_width, int maze_depth);
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
@@ -107,33 +107,33 @@ int main()
 
     camera.Position = Cube::get_camera_position(maze, maze_width, maze_depth);
 
-    // // load and create a texture 
-    // // -------------------------
-    // unsigned int texture1, texture2;
-    // // texture 1
-    // // ---------
-    // glGenTextures(1, &texture1);
-    // glBindTexture(GL_TEXTURE_2D, texture1);
-    // // set the texture wrapping parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // // set texture filtering parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // // load image, create texture and generate mipmaps
-    // int width, height, nrChannels;
-    // stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    // unsigned char *data = stbi_load("resources/textures/container.jpg", &width, &height, &nrChannels, 0);
-    // if (data)
-    // {
-    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    //     glGenerateMipmap(GL_TEXTURE_2D);
-    // }
-    // else
-    // {
-    //     std::cout << "Failed to load texture" << std::endl;
-    // }
-    // stbi_image_free(data);
+    // load and create a texture 
+    // -------------------------
+    unsigned int wall_texture, texture2;
+    // texture 1
+    // ---------
+    glGenTextures(1, &wall_texture);
+    glBindTexture(GL_TEXTURE_2D, wall_texture);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    unsigned char *data = stbi_load("resources/textures/brick_wall.jpg", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
     // // texture 2
     // // ---------
     // glGenTextures(1, &texture2);
@@ -160,8 +160,8 @@ int main()
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    // cube_shader.use();
-    // ourShader.setInt("texture1", 0);
+    cube_shader.use();
+    cube_shader.setInt("wall_texture", 0);
     // ourShader.setInt("texture2", 1);
 
     // render loop
@@ -176,7 +176,7 @@ int main()
 
         // input
         // -----
-        processInput(window);
+        processInput(window, maze, maze_width, maze_depth);
 
         // render
         // ------
@@ -184,8 +184,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
         // bind textures on corresponding texture units
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, wall_texture);
         // glActiveTexture(GL_TEXTURE1);
         // glBindTexture(GL_TEXTURE_2D, texture2);
 
@@ -250,19 +250,55 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, const char **maze, int maze_width, int maze_depth)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    glm::vec3 movement_vec = glm::vec3(0.0f);
+    glm::vec3 frontMovement = glm::normalize(glm::vec3(camera.Front.x, 0.0, camera.Front.z));
+    glm::mat3 camera_base = glm::mat3(frontMovement, camera.Up, camera.Right);
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        // camera.ProcessKeyboard(FORWARD, deltaTime);
+        movement_vec.x = 1.0f;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        // camera.ProcessKeyboard(BACKWARD, deltaTime);
+        movement_vec.x = -1.0f;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        // camera.ProcessKeyboard(LEFT, deltaTime);
+        movement_vec.z = -1.0f;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        // camera.ProcessKeyboard(RIGHT, deltaTime);
+        movement_vec.z = 1.0f;
+
+    glm::vec3 camera_mov_vec = camera_base * (movement_vec * deltaTime * camera.MovementSpeed);
+
+    int old_i, old_j, new_i, new_j;
+
+    std::tie(old_i, old_j) = Cube::get_block_in_position(maze_width, maze_depth, camera.Position.x, camera.Position.z);
+    // std::cout << "block = " << old_pos_block << std::endl;
+
+    std::tie(new_i, new_j) = Cube::get_block_in_position(
+        maze_width,
+        maze_depth,
+        camera.Position.x + camera_mov_vec.x,
+        camera.Position.z + camera_mov_vec.z
+    );
+
+    // if (maze[new_i][new_j] == 'x') {
+    //     if (old_i != new_i) {
+    //         camera_mov_vec.x = 0.0f;
+    //     } else if (old_j != new_j) {
+    //         camera_mov_vec.z = 0.0f;
+    //     } else {
+    //         camera_mov_vec.x = 0.0f;
+    //         camera_mov_vec.z = 0.0f;
+    //     }
+    // }
+
+    camera.Position += camera_mov_vec;
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

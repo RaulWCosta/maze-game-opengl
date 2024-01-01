@@ -130,4 +130,15 @@ namespace Cube {
         // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         return model;
     }
+
+    std::tuple<int, int> get_block_in_position(int maze_width, int maze_depth, float x, float y) {
+        // float x = (float) (i - (int) (mazewidth/2));
+        // float z = (float) (j - (int) (depth/2));
+
+        int i = (int) (x + (int)(maze_width / 2) + 0.5);
+        int j = (int) (y + (int)(maze_depth / 2) + 0.5);
+
+        // std::cout << "i= " << i << ", j= " << j << std::endl;
+        return std::make_tuple(i, j);
+    }
 }
