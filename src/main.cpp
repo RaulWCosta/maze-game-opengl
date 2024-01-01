@@ -257,22 +257,17 @@ void processInput(GLFWwindow *window, const char **maze, int maze_width, int maz
 
     glm::vec3 movement_vec = glm::vec3(0.0f);
     glm::vec3 frontMovement = glm::normalize(glm::vec3(camera.Front.x, 0.0, camera.Front.z));
-    glm::mat3 camera_base = glm::mat3(frontMovement, camera.Up, camera.Right);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        // camera.ProcessKeyboard(FORWARD, deltaTime);
-        movement_vec.x = 1.0f;
+        movement_vec += frontMovement;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        // camera.ProcessKeyboard(BACKWARD, deltaTime);
-        movement_vec.x = -1.0f;
+        movement_vec += -frontMovement;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        // camera.ProcessKeyboard(LEFT, deltaTime);
-        movement_vec.z = -1.0f;
+        movement_vec += -camera.Right;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        // camera.ProcessKeyboard(RIGHT, deltaTime);
-        movement_vec.z = 1.0f;
+        movement_vec += camera.Right;
 
-    glm::vec3 camera_mov_vec = camera_base * (movement_vec * deltaTime * camera.MovementSpeed);
+    glm::vec3 camera_mov_vec = (movement_vec * deltaTime * camera.MovementSpeed);
 
     int old_i, old_j, new_i, new_j;
 
