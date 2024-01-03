@@ -4,7 +4,7 @@
 
 
 char **random_prim_algorithm(int n) {
-
+    srand(time(NULL));
     char** maze = new char*[n];
 
     // Allocate memory for each string and copy the content
@@ -101,6 +101,14 @@ std::tuple<char **, int, int> get_maze() {
         n++;
 
     char** mazeOnHeap = random_prim_algorithm(n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (mazeOnHeap[i][j] == '.') {
+                mazeOnHeap[i][j] = 'c';
+                break;
+            }
+
 
     return std::make_tuple(mazeOnHeap, n, n);
 }

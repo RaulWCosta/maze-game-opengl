@@ -15,11 +15,7 @@
 #include "floor.h"
 
 #include <iostream>
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window, const char **maze, int maze_width, int maze_depth);
+#include <algorithm>
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
@@ -34,6 +30,154 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
+
+
+void get_input(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+glm::vec3 get_movement_from_input(GLFWwindow *window) {
+    glm::vec3 movement_vec = glm::vec3(0.0f);
+    glm::vec3 frontMovement = glm::vec3(camera.Front.x, 0.0, camera.Front.z);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        movement_vec += frontMovement;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        movement_vec += -frontMovement;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        movement_vec += -camera.Right;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        movement_vec += camera.Right;
+
+    return movement_vec;
+}
+
+glm::vec2 rectCollide(glm::vec2 oldPos, glm::vec2 newPos, float size1, glm::vec2 pos2, float size2) {
+    glm::vec2 result = glm::vec2(0.0f, 0.0f);
+
+    if (
+        newPos.x + size1 < pos2.x ||
+        newPos.x - size1 > pos2.x + size2 * size2 ||
+        oldPos.y + size1 < pos2.y ||
+        oldPos.y - size1 > pos2.y + size2 * size2
+    )
+        result.x = 1.0f;
+
+    if (
+        oldPos.x + size1 < pos2.x ||
+        oldPos.x - size1 > pos2.x + size2 * size2 ||
+        newPos.y + size1 < pos2.y ||
+        newPos.y - size1 > pos2.y + size2 * size2
+    )
+        result.y = 1.0f;
+
+    return result;
+}
+
+glm::vec3 checkCollision(glm::vec2 oldPos, glm::vec2 newPos, int maze_width, int maze_depth) {
+    glm::vec2 collisionVector = glm::vec2(1.0f, 1.0f);
+    glm::vec2 movementVector = newPos - oldPos;
+
+    if(movementVector.length() > 0) {
+        float blockSize = 1.0f;
+        float objectSize = 0.2;
+
+        int old_i, old_j;
+        std::tie(old_i, old_j) = Cube::get_indexes_from_position(maze_width, maze_depth, oldPos.x, oldPos.y);
+
+        int new_i, new_j;
+        std::tie(new_i, new_j) = Cube::get_indexes_from_position(maze_width, maze_depth, newPos.x, newPos.y);
+
+        glm::vec3 block1 = Cube::get_position_from_indexes(new_i, new_j, maze_width, maze_depth);
+        glm::vec3 block2 = Cube::get_position_from_indexes(old_i, new_j, maze_width, maze_depth);
+        glm::vec3 block3 = Cube::get_position_from_indexes(new_i, old_j, maze_width, maze_depth);
+
+        glm::vec2 block1_vec2 = glm::vec2(block1.z, block1.x);
+        glm::vec2 block2_vec2 = glm::vec2(block2.z, block2.x);
+        glm::vec2 block3_vec2 = glm::vec2(block3.z, block3.x);
+
+        glm::vec2 collide1 = rectCollide(oldPos, newPos, objectSize, block1_vec2, blockSize);
+        glm::vec2 collide2 = rectCollide(oldPos, newPos, objectSize, block2_vec2, blockSize);
+        glm::vec2 collide3 = rectCollide(oldPos, newPos, objectSize, block3_vec2, blockSize);
+
+        collisionVector = collisionVector * collide1 * collide2 * collide3;
+    }
+
+    return glm::vec3(collisionVector.x, 0.0f, collisionVector.y);
+}
+
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void move_camera(GLFWwindow *window, char **maze, int maze_width, int maze_depth)
+{
+    float mov_delta = 0.01f;
+    glm::vec3 movement_vec = get_movement_from_input(window);
+
+    if (glm::length(movement_vec) <= mov_delta) {
+        return;
+    }
+    movement_vec = glm::normalize(movement_vec);
+
+    // glm::vec3 collision_vector = checkCollision(
+    //     glm::vec2(camera.Position.z, camera.Position.x),
+    //     glm::vec2(camera.Position.z, camera.Position.x) + glm::vec2(movement_vec.z, movement_vec.x),
+    //     maze_width,
+    //     maze_depth
+    // );
+
+    // movement_vec = collision_vector * movement_vec;
+
+    if (glm::length(movement_vec) <= mov_delta) {
+        return;
+    }
+    movement_vec = (deltaTime * camera.MovementSpeed) * glm::normalize(movement_vec);
+
+    camera.Position += movement_vec;
+
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
 
 int main()
 {
@@ -93,7 +237,7 @@ int main()
     int floor_vertices_size;
     std::tie(floor_vertices, floor_vertices_size) = Floor::get_vertices();
 
-    const char **maze;
+    char **maze;
     int maze_width, maze_depth;
     std::tie(maze, maze_width, maze_depth) = get_maze();
 
@@ -176,7 +320,8 @@ int main()
 
         // input
         // -----
-        processInput(window, maze, maze_width, maze_depth);
+        get_input(window);
+        move_camera(window, maze, maze_width, maze_depth);
 
         // render
         // ------
@@ -246,92 +391,4 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
-}
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window, const char **maze, int maze_width, int maze_depth)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    glm::vec3 movement_vec = glm::vec3(0.0f);
-    glm::vec3 frontMovement = glm::normalize(glm::vec3(camera.Front.x, 0.0, camera.Front.z));
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        movement_vec += frontMovement;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        movement_vec += -frontMovement;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        movement_vec += -camera.Right;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        movement_vec += camera.Right;
-
-    glm::vec3 camera_mov_vec = (movement_vec * deltaTime * camera.MovementSpeed);
-
-    int old_i, old_j, new_i, new_j;
-
-    std::tie(old_i, old_j) = Cube::get_block_in_position(maze_width, maze_depth, camera.Position.x, camera.Position.z);
-    // std::cout << "block = " << old_pos_block << std::endl;
-
-    std::tie(new_i, new_j) = Cube::get_block_in_position(
-        maze_width,
-        maze_depth,
-        camera.Position.x + camera_mov_vec.x,
-        camera.Position.z + camera_mov_vec.z
-    );
-
-    // if (maze[new_i][new_j] == 'x') {
-    //     if (old_i != new_i) {
-    //         camera_mov_vec.x = 0.0f;
-    //     } else if (old_j != new_j) {
-    //         camera_mov_vec.z = 0.0f;
-    //     } else {
-    //         camera_mov_vec.x = 0.0f;
-    //         camera_mov_vec.z = 0.0f;
-    //     }
-    // }
-
-    camera.Position += camera_mov_vec;
-
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
