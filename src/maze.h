@@ -96,7 +96,7 @@ char **random_prim_algorithm(int n) {
 
 std::tuple<char **, int> get_maze() {
 
-    int n = 70;
+    int n = 8;
 
     if (n % 2 == 0)
         n++;

@@ -105,8 +105,8 @@ namespace Cube {
     }
 
     glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
-        float x = (float) (i - (int) (maze_size/2));
-        float z = (float) (j - (int) (maze_size/2));
+        float x = (float) (j - (int) (maze_size/2));
+        float z = (float) (i - (int) (maze_size/2));
         return glm::vec3(x, 0.0f, z);
     }
 
