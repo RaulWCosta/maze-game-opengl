@@ -18,8 +18,8 @@
 #include <algorithm>
 
 // settings
-const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 900;
+const unsigned int SCR_WIDTH = 900;
+const unsigned int SCR_HEIGHT = 600;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -42,9 +42,9 @@ glm::vec3 get_movement_from_input(GLFWwindow *window) {
     glm::vec3 frontMovement = glm::vec3(camera.Front.x, 0.0, camera.Front.z);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        movement_vec += frontMovement;
+        movement_vec += camera.Front;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        movement_vec += -frontMovement;
+        movement_vec += -camera.Front;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         movement_vec += -camera.Right;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -75,7 +75,7 @@ glm::vec2 rectCollide(glm::vec2 oldPos, glm::vec2 newPos, float size1, glm::vec2
     return result;
 }
 
-glm::vec3 checkCollision(glm::vec2 oldPos, glm::vec2 newPos, int maze_width, int maze_depth) {
+glm::vec3 checkCollision(glm::vec2 oldPos, glm::vec2 newPos, int maze_size) {
     glm::vec2 collisionVector = glm::vec2(1.0f, 1.0f);
     glm::vec2 movementVector = newPos - oldPos;
 
@@ -84,14 +84,14 @@ glm::vec3 checkCollision(glm::vec2 oldPos, glm::vec2 newPos, int maze_width, int
         float objectSize = 0.2;
 
         int old_i, old_j;
-        std::tie(old_i, old_j) = Cube::get_indexes_from_position(maze_width, maze_depth, oldPos.x, oldPos.y);
+        std::tie(old_i, old_j) = Cube::get_indexes_from_position(maze_size, oldPos.x, oldPos.y);
 
         int new_i, new_j;
-        std::tie(new_i, new_j) = Cube::get_indexes_from_position(maze_width, maze_depth, newPos.x, newPos.y);
+        std::tie(new_i, new_j) = Cube::get_indexes_from_position(maze_size, newPos.x, newPos.y);
 
-        glm::vec3 block1 = Cube::get_position_from_indexes(new_i, new_j, maze_width, maze_depth);
-        glm::vec3 block2 = Cube::get_position_from_indexes(old_i, new_j, maze_width, maze_depth);
-        glm::vec3 block3 = Cube::get_position_from_indexes(new_i, old_j, maze_width, maze_depth);
+        glm::vec3 block1 = Cube::get_position_from_indexes(new_i, new_j, maze_size);
+        glm::vec3 block2 = Cube::get_position_from_indexes(old_i, new_j, maze_size);
+        glm::vec3 block3 = Cube::get_position_from_indexes(new_i, old_j, maze_size);
 
         glm::vec2 block1_vec2 = glm::vec2(block1.z, block1.x);
         glm::vec2 block2_vec2 = glm::vec2(block2.z, block2.x);
@@ -110,7 +110,7 @@ glm::vec3 checkCollision(glm::vec2 oldPos, glm::vec2 newPos, int maze_width, int
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void move_camera(GLFWwindow *window, char **maze, int maze_width, int maze_depth)
+void move_camera(GLFWwindow *window, char **maze, int maze_size)
 {
     float mov_delta = 0.01f;
     glm::vec3 movement_vec = get_movement_from_input(window);
@@ -238,10 +238,10 @@ int main()
     std::tie(floor_vertices, floor_vertices_size) = Floor::get_vertices();
 
     char **maze;
-    int maze_width, maze_depth;
-    std::tie(maze, maze_width, maze_depth) = get_maze();
+    int maze_size;
+    std::tie(maze, maze_size) = get_maze();
 
-    std::vector<glm::vec3> cubePositions = Cube::get_positions(maze, maze_width, maze_depth);
+    std::vector<glm::vec3> cubePositions = Cube::get_positions(maze, maze_size);
 
     unsigned int cubeVAO, cubeVBO;
     std::tie(cubeVAO, cubeVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
@@ -249,7 +249,7 @@ int main()
     unsigned int floorVAO, floorVBO;
     std::tie(floorVAO, floorVBO) = Floor::get_buffers(floor_vertices, floor_vertices_size);
 
-    camera.Position = Cube::get_camera_position(maze, maze_width, maze_depth);
+    camera.Position = Cube::get_camera_position(maze, maze_size);
 
     // load and create a texture 
     // -------------------------
@@ -321,7 +321,7 @@ int main()
         // input
         // -----
         get_input(window);
-        move_camera(window, maze, maze_width, maze_depth);
+        move_camera(window, maze, maze_size);
 
         // render
         // ------
@@ -372,7 +372,7 @@ int main()
 
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         // model = glm::translate(model, cubePositions[i]);
-        floor_shader.setMat4("model", Floor::get_model_mat(maze_width, maze_depth));
+        floor_shader.setMat4("model", Floor::get_model_mat(maze_size));
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 

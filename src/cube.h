@@ -87,39 +87,39 @@ namespace Cube {
         return std::make_tuple(VAO, VBO);
     }
 
-    glm::vec3 get_camera_position(char **maze, int width, int depth) {
+    glm::vec3 get_camera_position(char **maze, int maze_size) {
 
         std::vector<glm::vec3> cubePositions;
 
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < depth; j++) {
+        for (int i = 0; i < maze_size; i++) {
+            for (int j = 0; j < maze_size; j++) {
                 // std::cout << maze[i][j] << std::endl; 
 
                 if (maze[i][j] == 'c') {
-                    float x = (float) (i - (int) (width/2));
-                    float z = (float) (j - (int) (depth/2));
+                    float x = (float) (i - (int) (maze_size/2));
+                    float z = (float) (j - (int) (maze_size/2));
                     return glm::vec3(x, 0.0f, z);
                 }
             }
         }
     }
 
-    glm::vec3 get_position_from_indexes(int i, int j, int width, int depth) {
-        float x = (float) (i - (int) (width/2));
-        float z = (float) (j - (int) (depth/2));
+    glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
+        float x = (float) (i - (int) (maze_size/2));
+        float z = (float) (j - (int) (maze_size/2));
         return glm::vec3(x, 0.0f, z);
     }
 
-    std::vector<glm::vec3> get_positions(char **maze, int width, int depth) {
+    std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
 
         std::vector<glm::vec3> cubePositions;
 
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < depth; j++) {
+        for (int i = 0; i < maze_size; i++) {
+            for (int j = 0; j < maze_size; j++) {
                 // std::cout << maze[i][j] << std::endl; 
 
                 if (maze[i][j] == 'x') {
-                    glm::vec3 pos = get_position_from_indexes(i, j, width, depth);
+                    glm::vec3 pos = get_position_from_indexes(i, j, maze_size);
                     cubePositions.push_back(pos);
                     // float x = (float) (i - (int) (width/2));
                     // float z = (float) (j - (int) (depth/2));
@@ -139,12 +139,12 @@ namespace Cube {
         return model;
     }
 
-    std::tuple<int, int> get_indexes_from_position(int maze_width, int maze_depth, float x, float y) {
+    std::tuple<int, int> get_indexes_from_position(int maze_size, float x, float y) {
         // float x = (float) (i - (int) (mazewidth/2));
         // float z = (float) (j - (int) (depth/2));
 
-        int i = (int) (y + (int)(maze_depth / 2) + 0.5);
-        int j = (int) (x + (int)(maze_width / 2) + 0.5);
+        int i = (int) (y + (int)(maze_size / 2) + 0.5);
+        int j = (int) (x + (int)(maze_size / 2) + 0.5);
 
         // std::cout << "i= " << i << ", j= " << j << std::endl;
         return std::make_tuple(i, j);
