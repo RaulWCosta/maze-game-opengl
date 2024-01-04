@@ -87,6 +87,19 @@ namespace Cube {
         return std::make_tuple(VAO, VBO);
     }
 
+    std::tuple<int, int> get_indexes_from_position(float x, float z, int maze_size) {
+        int i = (int) (z + (int)(maze_size / 2) + 0.5);
+        int j = (int) (x + (int)(maze_size / 2) + 0.5);
+
+        return std::make_tuple(i, j);
+    }
+
+    glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
+        float x = (float) (j - (int) (maze_size / 2));
+        float z = (float) (i - (int) (maze_size / 2));
+        return glm::vec3(x, 0.0f, z);
+    }
+
     glm::vec3 get_camera_position(char **maze, int maze_size) {
 
         std::vector<glm::vec3> cubePositions;
@@ -96,18 +109,10 @@ namespace Cube {
                 // std::cout << maze[i][j] << std::endl; 
 
                 if (maze[i][j] == 'c') {
-                    float x = (float) (i - (int) (maze_size/2));
-                    float z = (float) (j - (int) (maze_size/2));
-                    return glm::vec3(x, 0.0f, z);
+                    return get_position_from_indexes(i, j, maze_size);
                 }
             }
         }
-    }
-
-    glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
-        float x = (float) (j - (int) (maze_size/2));
-        float z = (float) (i - (int) (maze_size/2));
-        return glm::vec3(x, 0.0f, z);
     }
 
     std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
@@ -121,9 +126,12 @@ namespace Cube {
                 if (maze[i][j] == 'x') {
                     glm::vec3 pos = get_position_from_indexes(i, j, maze_size);
                     cubePositions.push_back(pos);
-                    // float x = (float) (i - (int) (width/2));
-                    // float z = (float) (j - (int) (depth/2));
-                    // cubePositions.push_back(glm::vec3(x, 0.0f, z)); 
+
+                    // int calc_i, calc_j;
+                    // std::tie(calc_i, calc_j) = get_indexes_from_position(maze_size, pos.x, pos.z);
+
+                    // assert(calc_i == i);
+                    // assert(calc_j == j);
                 }
             }
         }
@@ -137,16 +145,5 @@ namespace Cube {
         // float angle = 20.0f * i;
         // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         return model;
-    }
-
-    std::tuple<int, int> get_indexes_from_position(int maze_size, float x, float y) {
-        // float x = (float) (i - (int) (mazewidth/2));
-        // float z = (float) (j - (int) (depth/2));
-
-        int i = (int) (y + (int)(maze_size / 2) + 0.5);
-        int j = (int) (x + (int)(maze_size / 2) + 0.5);
-
-        // std::cout << "i= " << i << ", j= " << j << std::endl;
-        return std::make_tuple(i, j);
     }
 }

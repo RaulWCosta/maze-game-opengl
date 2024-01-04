@@ -1,3 +1,2 @@
-implement collision
-invert x and z axis
+fix collision
 make code prettier
