@@ -56,19 +56,22 @@ glm::vec3 get_movement_from_input(GLFWwindow *window) {
 }
 
 bool rectCollide(glm::vec3 obj_pos, float obj_size, glm::vec3 block_pos, float block_size) {
+    // Calculate the half sizes of the objects
+    float obj_half_size_x = obj_size / 2.0f;
+    float obj_half_size_z = obj_size / 2.0f;
+    float block_half_size_x = block_size / 2.0f;
+    float block_half_size_z = block_size / 2.0f;
 
-    return (
-        // x
-        (
-            (obj_pos.x + obj_size/2 >= block_pos.x - block_size/2) && (obj_pos.x - obj_size/2 <= block_pos.x - block_size/2) ||
-            (obj_pos.x - obj_size/2 >= block_pos.x - block_size/2) && (obj_pos.x + obj_size/2 <= block_pos.x + block_size/2) ||
-            (obj_pos.x - obj_size/2 <= block_pos.x + block_size/2) && (obj_pos.x + obj_size/2 >= block_pos.x + block_size/2) 
-        ) && ( // z
-            (obj_pos.z + obj_size/2 >= block_pos.z - block_size/2) && (obj_pos.z - obj_size/2 <= block_pos.z - block_size/2) ||
-            (obj_pos.z - obj_size/2 >= block_pos.z - block_size/2) && (obj_pos.z + obj_size/2 <= block_pos.z + block_size/2) ||
-            (obj_pos.z - obj_size/2 <= block_pos.z + block_size/2) && (obj_pos.z + obj_size/2 >= block_pos.z + block_size/2) 
-        )
-    );
+    // Check for collision along the x-axis
+    bool collide_x = (obj_pos.x + obj_half_size_x >= block_pos.x - block_half_size_x) &&
+                     (obj_pos.x - obj_half_size_x <= block_pos.x + block_half_size_x);
+
+    // Check for collision along the z-axis
+    bool collide_z = (obj_pos.z + obj_half_size_z >= block_pos.z - block_half_size_z) &&
+                     (obj_pos.z - obj_half_size_z <= block_pos.z + block_half_size_z);
+
+    // Return true if there is a collision along both axes
+    return collide_x && collide_z;
 }
 
 bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int objectSize, int blockSize) {
@@ -88,7 +91,9 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int obje
         {1, 0},
         {1, 1}
     };
-
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "obj pos = " << glm::to_string(pos) << std::endl;
+    std::cout << "obj indices = " << pos_i << ", " << pos_j << std::endl;
     for (const auto& delta : deltas) {
         int val1 = std::get<0>(delta);
         int val2 = std::get<1>(delta);
@@ -98,17 +103,22 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int obje
 
         if (maze[pos_i + val1][pos_j + val2] == 'x') {
             glm::vec3 block = Cube::get_position_from_indexes(pos_i + val1, pos_j + val2, maze_size);
-            collides |= rectCollide(pos, objectSize, block, blockSize);
+            collides = collides || rectCollide(pos, objectSize, block, blockSize);
+            std::cout << "blockpos = " << pos_i + val1 << ", " << pos_j + val2 << std::endl;
+            std::cout << "block vec = " << glm::to_string(block) << std::endl;
+            std::cout << "val1 = " << val1 << " val2 = " << val2 << " collides = " << collides << std::endl;
         }
     }
+
+
     return collides;
 }
 
 glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float delta, char** maze, int maze_size) {
     // glm::vec3 collisionVector = glm::vec3(0.0f);
-    float mov_delta = 0.01f;
+    float mov_delta = 0.05f;
     float blockSize = 1.05f;
-    float objectSize = 0.4;
+    float objectSize = 0.2;
     
     glm::vec3 newPos = oldPos + (movement_vec * delta);
     
@@ -120,7 +130,7 @@ glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float delta, 
         newPos = oldPos + (movement_vec_cp * delta);
         if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
             // no collision
-            std::cout << "no collision default" << std::endl;
+            // std::cout << "no collision default" << std::endl;
             return glm::vec3(1.0, 0.0f, 1.0f);
         }
     }
@@ -146,12 +156,12 @@ glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float delta, 
         newPos = oldPos + (movement_vec_cp * delta);
         if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
             // no collision
-            std::cout << "no collision z" << std::endl;
+            // std::cout << "no collision z" << std::endl;
             return glm::vec3(0.0, 0.0f, 1.0f);
         }
     }
 
-    std::cout << "-----------------" << std::endl;
+    // std::cout << "-----------------" << std::endl;
     return glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
@@ -166,41 +176,18 @@ void move_camera(GLFWwindow *window, char **maze, int maze_size)
     if (glm::length(movement_vec) <= mov_delta) {
         return;
     }
+    movement_vec.y = 0.0f;
     movement_vec = glm::normalize(movement_vec);
 
-    glm::vec3 collision_vector05 = checkCollision(
-        camera.Position,
-        movement_vec,
-        0.05f,
-        maze,
-        maze_size
-    );
+    // glm::vec3 collision_vector4 = checkCollision(
+    //     camera.Position,
+    //     movement_vec,
+    //     0.1f,
+    //     maze,
+    //     maze_size
+    // );
 
-    glm::vec3 collision_vector1 = checkCollision(
-        camera.Position,
-        movement_vec,
-        0.1f,
-        maze,
-        maze_size
-    );
-
-    glm::vec3 collision_vector2 = checkCollision(
-        camera.Position,
-        movement_vec,
-        0.2f,
-        maze,
-        maze_size
-    );
-
-    glm::vec3 collision_vector4 = checkCollision(
-        camera.Position,
-        movement_vec,
-        0.4f,
-        maze,
-        maze_size
-    );
-
-    movement_vec = collision_vector05 * collision_vector1 * collision_vector2 * collision_vector4 * movement_vec;
+    // movement_vec = collision_vector4 * movement_vec;
 
     if (glm::length(movement_vec) <= mov_delta) {
         return;
@@ -385,6 +372,7 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
         // per-frame time logic
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());

@@ -1,2 +1,3 @@
 fix collision
 make code prettier
+transform func names to snake case

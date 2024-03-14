@@ -1,7 +1,57 @@
 #pragma once
 
 #include <tuple>
+#include <cstdlib>
+#include <algorithm>
+#include <cmath>
 
+bool is_wall_valid(char** maze, int i, int j) {
+
+    int num_visited_neighboors = 0;
+    if (maze[i + 1][j] == '.')
+        num_visited_neighboors++;
+    if (maze[i - 1][j] == '.')
+        num_visited_neighboors++;
+    if (maze[i][j + 1] == '.')
+        num_visited_neighboors++;
+    if (maze[i][j - 1] == '.')
+        num_visited_neighboors++;
+
+    if (num_visited_neighboors != 1) {
+        return false;
+    }
+
+    unsigned char curr_pos = 0;
+
+    if (maze[i-1][j-1] == '.')
+        curr_pos += 1 << 7;
+    if (maze[i-1][j] == '.')
+        curr_pos += 1 << 6;
+    if (maze[i-1][j+1] == '.')
+        curr_pos += 1 << 5;
+    if (maze[i][j+1] == '.')
+        curr_pos += 1 << 4;
+    if (maze[i+1][j+1] == '.')
+        curr_pos += 1 << 3;
+    if (maze[i+1][j] == '.')
+        curr_pos += 1 << 2;
+    if (maze[i+1][j-1] == '.')
+        curr_pos += 1 << 1;
+    if (maze[i][j-1] == '.')
+        curr_pos += 1;
+
+    curr_pos = curr_pos ^ ((curr_pos >> 1) | (curr_pos << 7));
+
+    int num_bits = 0;
+    for (int i = 0; i < 8; i++) {
+        if (curr_pos & (unsigned char)(1 << i))
+            num_bits += 1;
+    }
+    std::cout << "curr_pos = "<< (int)curr_pos << std::endl; 
+    std::cout << "bits = "<< num_bits << std::endl; 
+    return (bool)(num_bits == 2);
+
+}
 
 char **random_prim_algorithm(int n) {
     // srand(time(NULL));
@@ -41,6 +91,7 @@ char **random_prim_algorithm(int n) {
 
     while (walls_list.size()) {
 
+        // add choosen wall on top of stack
         int random_wall = rand() % walls_list.size();
         std::tuple aux = walls_list[walls_list.size() - 1];
         walls_list[walls_list.size() - 1] = walls_list[random_wall];
@@ -50,17 +101,7 @@ char **random_prim_algorithm(int n) {
         std::tie(cell_i, cell_j) = walls_list[walls_list.size() - 1];
         walls_list.pop_back();
 
-        int num_visited_neighboors = 0;
-        if (maze[cell_i + 1][cell_j] == '.')
-            num_visited_neighboors++;
-        if (maze[cell_i - 1][cell_j] == '.')
-            num_visited_neighboors++;
-        if (maze[cell_i][cell_j + 1] == '.')
-            num_visited_neighboors++;
-        if (maze[cell_i][cell_j - 1] == '.')
-            num_visited_neighboors++;
-
-        if (num_visited_neighboors == 1) {
+        if (is_wall_valid(maze, cell_i, cell_j)) {
 
             maze[cell_i][cell_j] = '.';
 
@@ -83,15 +124,17 @@ char **random_prim_algorithm(int n) {
         }
     }
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            std::cout << maze[i][j];
-        }
-        std::cout << std::endl;
-    }
-
-
     return maze;
+}
+
+
+void add_init_location(char **maze, int n) {
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (maze[i][j] == '.') {
+                maze[i][j] = 'c';
+                return;
+            }
 }
 
 std::tuple<char **, int> get_maze() {
@@ -103,13 +146,14 @@ std::tuple<char **, int> get_maze() {
 
     char** mazeOnHeap = random_prim_algorithm(n);
 
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            if (mazeOnHeap[i][j] == '.') {
-                mazeOnHeap[i][j] = 'c';
-                break;
-            }
+    add_init_location(mazeOnHeap, n);
 
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            std::cout << mazeOnHeap[i][j];
+        }
+        std::cout << std::endl;
+    }
 
     return std::make_tuple(mazeOnHeap, n);
 }

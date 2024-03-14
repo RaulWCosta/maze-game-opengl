@@ -8,6 +8,8 @@ include_directories(${CMAKE_SOURCE_DIR}/dependencies/include)
 add_library(glad STATIC ${CMAKE_SOURCE_DIR}/dependencies/include/glad/glad.c)
 add_library(stb_image STATIC ${CMAKE_SOURCE_DIR}/dependencies/include/stb_image/stb_image.cpp)
 
+set(OpenGL_GL_PREFERENCE "GLVND")
+
 find_package(OpenGL REQUIRED)
 
 add_executable(maze_game src/main.cpp)
