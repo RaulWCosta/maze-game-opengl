@@ -10,6 +10,8 @@
 
 #include "settings.h"
 
+#define DEBUG 1
+
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
     FORWARD,
@@ -76,8 +78,13 @@ public:
         glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
         glfwSetCursorPosCallback(mWindow, mouse_callback);
 
+#if DEBUG
         // tell GLFW to capture our mouse
+        glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+#else
         glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+#endif
+
 
 
         glfwSetWindowUserPointer(mWindow, this);
