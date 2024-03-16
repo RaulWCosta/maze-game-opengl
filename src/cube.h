@@ -27,7 +27,7 @@ public:
 
     Cube() {
 
-        mShader.setInt("mWallTexture", 0);
+        mShader.setInt("wall_texture", 0);
 
         float *cube_vertices;
         int cube_vertices_size;
@@ -49,13 +49,12 @@ public:
 
     void render(Camera& camera, glm::vec3 position) {
         mShader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        mShader.setMat4("projection", projection);
+        glBindVertexArray(mVAO);
+        
+        mShader.setMat4("projection", mProjection);
 
         glm::mat4 view = camera.GetViewMatrix();
         mShader.setMat4("view", view);
-
-        glBindVertexArray(mVAO);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, position);
@@ -142,7 +141,7 @@ private:
             -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
-
+        // TODO fix memory leak
         float *d_vertices = new float[vertices.size()];
         for (int i = 0; i < vertices.size(); i++) {
             d_vertices[i] = vertices[i];

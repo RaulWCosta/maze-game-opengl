@@ -47,8 +47,7 @@ bool is_wall_valid(char** maze, int i, int j) {
         if (curr_pos & (unsigned char)(1 << i))
             num_bits += 1;
     }
-    std::cout << "curr_pos = "<< (int)curr_pos << std::endl; 
-    std::cout << "bits = "<< num_bits << std::endl; 
+
     return (bool)(num_bits == 2);
 
 }

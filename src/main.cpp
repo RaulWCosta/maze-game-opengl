@@ -105,25 +105,7 @@ int main()
         return -1;
     }
 
-    // configure global opengl state
-    // -----------------------------
     glEnable(GL_DEPTH_TEST);
-
-    // build and compile our shader zprogram
-    // ------------------------------------
-    
-    Shader floor_shader("shaders/floor.vert", "shaders/floor.frag");
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-
-    float *cube_vertices;
-    // int cube_vertices_size;
-    // std::tie(cube_vertices, cube_vertices_size) = Cube::get_vertices();
-
-    float *floor_vertices;
-    int floor_vertices_size;
-    std::tie(floor_vertices, floor_vertices_size) = Floor::get_vertices();
 
     char **maze;
     int maze_size;
@@ -131,18 +113,13 @@ int main()
 
     std::vector<glm::vec3> cubePositions = get_positions(maze, maze_size);
 
-    // std::tie(cubeVAO, cubeVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
-
-    unsigned int floorVAO, floorVBO;
-    std::tie(floorVAO, floorVBO) = Floor::get_buffers(floor_vertices, floor_vertices_size);
-
-
     camera.Position = get_camera_position(maze, maze_size);
 
     float target_frame_rate = 60.0;
     float last_time = static_cast<float>(glfwGetTime());
 
     Cube cube;
+    Floor floor = Floor(maze_size);
 
     // render loop
     // -----------
@@ -169,43 +146,19 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
-        // bind textures on corresponding texture units
-
         cube.bind_texture();
-
 
         for (int i = 0; i < cubePositions.size(); i++)
         {
-
             cube.render(camera, cubePositions[i]);
-
         }
 
-        floor_shader.use();
-        glBindVertexArray(floorVAO);
+        floor.render(camera);
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        floor_shader.setMat4("projection", projection);
-
-        // camera/view transformation
-        glm::mat4 view = camera.GetViewMatrix();
-        floor_shader.setMat4("view", view);
-
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        // model = glm::translate(model, cubePositions[i]);
-        floor_shader.setMat4("model", Floor::get_model_mat(maze_size));
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
         glfwSwapBuffers(camera.mWindow);
         glfwPollEvents();
     }
 
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
