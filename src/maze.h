@@ -137,6 +137,56 @@ void add_init_location(char **maze, int n) {
             }
 }
 
+std::tuple<int, int> get_indexes_from_position(float x, float z, int maze_size) {
+    int i = (int) (z + (int)(maze_size / 2) + 0.5);
+    int j = (int) (x + (int)(maze_size / 2) + 0.5);
+
+    return std::make_tuple(i, j);
+}
+
+glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
+    float x = (float) (j - (int) (maze_size / 2));
+    float z = (float) (i - (int) (maze_size / 2));
+    return glm::vec3(x, 0.0f, z);
+}
+
+glm::vec3 get_camera_position(char **maze, int maze_size) {
+
+    for (int i = 0; i < maze_size; i++) {
+        for (int j = 0; j < maze_size; j++) {
+            // std::cout << maze[i][j] << std::endl; 
+
+            if (maze[i][j] == 'c') {
+                return get_position_from_indexes(i, j, maze_size);
+            }
+        }
+    }
+}
+
+std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
+
+    std::vector<glm::vec3> cubePositions;
+
+    for (int i = 0; i < maze_size; i++) {
+        for (int j = 0; j < maze_size; j++) {
+            // std::cout << maze[i][j] << std::endl; 
+
+            if (maze[i][j] == 'x') {
+                glm::vec3 pos = get_position_from_indexes(i, j, maze_size);
+                cubePositions.push_back(pos);
+
+                // int calc_i, calc_j;
+                // std::tie(calc_i, calc_j) = get_indexes_from_position(maze_size, pos.x, pos.z);
+
+                // assert(calc_i == i);
+                // assert(calc_j == j);
+            }
+        }
+    }
+
+    return cubePositions;
+}
+
 std::tuple<char **, int> get_maze() {
 
     int n = 8;

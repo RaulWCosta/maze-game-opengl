@@ -12,7 +12,50 @@
 #include <tuple>
 #include <vector>
 
-namespace Cube {
+#include "shader_s.h"
+
+class Cube {
+
+public:
+    Shader *mShader = nullptr;
+    unsigned int mVAO;
+    unsigned int mVBO;
+
+    Cube() {
+        mShader = new Shader("shaders/cube.vert", "shaders/cube.frag");
+        mShader->setInt("wall_texture", 0);
+
+        float *cube_vertices;
+        int cube_vertices_size;
+        std::tie(cube_vertices, cube_vertices_size) = Cube::get_vertices();
+        std::tie(mVAO, mVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
+    }
+
+    ~Cube() {
+        glDeleteVertexArrays(1, &mVAO);
+        glDeleteBuffers(1, &mVBO);
+
+        delete mShader;
+    }
+
+    void render(Camera& camera, glm::vec3 position) {
+        mShader->use();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        mShader->setMat4("projection", projection);
+
+        glm::mat4 view = camera.GetViewMatrix();
+        mShader->setMat4("view", view);
+
+        glBindVertexArray(mVAO);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, position);
+
+        mShader->setMat4("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    }
 
     std::tuple<float*, int> get_vertices() {
         std::vector<float> vertices = {
@@ -87,58 +130,6 @@ namespace Cube {
         return std::make_tuple(VAO, VBO);
     }
 
-    std::tuple<int, int> get_indexes_from_position(float x, float z, int maze_size) {
-        int i = (int) (z + (int)(maze_size / 2) + 0.5);
-        int j = (int) (x + (int)(maze_size / 2) + 0.5);
-
-        return std::make_tuple(i, j);
-    }
-
-    glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
-        float x = (float) (j - (int) (maze_size / 2));
-        float z = (float) (i - (int) (maze_size / 2));
-        return glm::vec3(x, 0.0f, z);
-    }
-
-    glm::vec3 get_camera_position(char **maze, int maze_size) {
-
-        std::vector<glm::vec3> cubePositions;
-
-        for (int i = 0; i < maze_size; i++) {
-            for (int j = 0; j < maze_size; j++) {
-                // std::cout << maze[i][j] << std::endl; 
-
-                if (maze[i][j] == 'c') {
-                    return get_position_from_indexes(i, j, maze_size);
-                }
-            }
-        }
-    }
-
-    std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
-
-        std::vector<glm::vec3> cubePositions;
-
-        for (int i = 0; i < maze_size; i++) {
-            for (int j = 0; j < maze_size; j++) {
-                // std::cout << maze[i][j] << std::endl; 
-
-                if (maze[i][j] == 'x') {
-                    glm::vec3 pos = get_position_from_indexes(i, j, maze_size);
-                    cubePositions.push_back(pos);
-
-                    // int calc_i, calc_j;
-                    // std::tie(calc_i, calc_j) = get_indexes_from_position(maze_size, pos.x, pos.z);
-
-                    // assert(calc_i == i);
-                    // assert(calc_j == j);
-                }
-            }
-        }
-
-        return cubePositions;
-    }
-
     glm::mat4 get_model_mat(glm::vec3 position) {
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         model = glm::translate(model, position);
@@ -146,4 +137,4 @@ namespace Cube {
         // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         return model;
     }
-}
+};
