@@ -19,8 +19,7 @@
 #include <algorithm>
 #include <tuple>
 
-constexpr unsigned int SCR_WIDTH = 900;
-constexpr unsigned int SCR_HEIGHT = 600;
+#include "settings.h"
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
