@@ -1,7 +1,5 @@
 
-
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -9,6 +7,8 @@
 
 #include <vector>
 #include <iostream>
+
+#include "settings.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -25,6 +25,9 @@ const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
@@ -44,45 +47,50 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+    GLFWwindow* mWindow;
+
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(
+        int screen_width, int screen_height,
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f),
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+        float yaw = YAW, float pitch = PITCH
+    ) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
+        init_window(screen_width, screen_height);
+
         Position = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
     }
-    // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-    {
-        Position = glm::vec3(posX, posY, posZ);
-        WorldUp = glm::vec3(upX, upY, upZ);
-        Yaw = yaw;
-        Pitch = pitch;
-        updateCameraVectors();
+
+    void init_window(int screen_width, int screen_height) {
+        mWindow = glfwCreateWindow(screen_width, screen_height, "LearnOpenGL", NULL, NULL);
+
+        if (mWindow == NULL)
+        {
+            std::cout << "Failed to create GLFW mWindow" << std::endl;
+            glfwTerminate();
+            exit -1;
+        }
+        glfwMakeContextCurrent(mWindow);
+        glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
+        glfwSetCursorPosCallback(mWindow, mouse_callback);
+        glfwSetScrollCallback(mWindow, scroll_callback);
+
+        // tell GLFW to capture our mouse
+        glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
+        glfwSetWindowUserPointer(mWindow, this);
     }
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front, Up);
-    }
-
-    // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void ProcessKeyboard(Camera_Movement direction, float deltaTime)
-    {
-        // glm::vec3 frontMovement = glm::normalize(glm::vec3(Front.x, 0.0, Front.z));
-
-        // float velocity = MovementSpeed * deltaTime;
-        // if (direction == FORWARD)
-        //     Position += frontMovement * velocity;
-        // if (direction == BACKWARD)
-        //     Position -= frontMovement * velocity;
-        // if (direction == LEFT)
-        //     Position -= Right * velocity;
-        // if (direction == RIGHT)
-        //     Position += Right * velocity;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -136,5 +144,42 @@ private:
         // std::cout << "(" << front.x << ", " << front.y << ", " << front.z << ")" << std::endl;
     }
 };
-#endif
 
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    Camera* camera = (Camera *)glfwGetWindowUserPointer(window);
+    camera->ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    Camera* camera = (Camera *)glfwGetWindowUserPointer(window);
+    camera->ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
