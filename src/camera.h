@@ -23,10 +23,8 @@ const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
 const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
-const float ZOOM        =  45.0f;
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -45,7 +43,6 @@ public:
     // camera options
     float MovementSpeed;
     float MouseSensitivity;
-    float Zoom;
 
     GLFWwindow* mWindow;
 
@@ -55,7 +52,7 @@ public:
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f),
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
         float yaw = YAW, float pitch = PITCH
-    ) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    ) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
     {
         init_window(screen_width, screen_height);
 
@@ -78,7 +75,6 @@ public:
         glfwMakeContextCurrent(mWindow);
         glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
         glfwSetCursorPosCallback(mWindow, mouse_callback);
-        glfwSetScrollCallback(mWindow, scroll_callback);
 
         // tell GLFW to capture our mouse
         glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -115,15 +111,6 @@ public:
         updateCameraVectors();
     }
 
-    // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(float yoffset)
-    {
-        Zoom -= (float)yoffset;
-        if (Zoom < 1.0f)
-            Zoom = 1.0f;
-        if (Zoom > 45.0f)
-            Zoom = 45.0f;
-    }
 
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
@@ -171,11 +158,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    Camera* camera = (Camera *)glfwGetWindowUserPointer(window);
-    camera->ProcessMouseScroll(static_cast<float>(yoffset));
-}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {

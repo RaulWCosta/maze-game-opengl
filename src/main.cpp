@@ -139,65 +139,10 @@ int main()
 
     camera.Position = get_camera_position(maze, maze_size);
 
-    // load and create a texture 
-    // -------------------------
-    unsigned int wall_texture, texture2;
-    // texture 1
-    // ---------
-    glGenTextures(1, &wall_texture);
-    glBindTexture(GL_TEXTURE_2D, wall_texture);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("resources/textures/brick_wall.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-    // // texture 2
-    // // ---------
-    // glGenTextures(1, &texture2);
-    // glBindTexture(GL_TEXTURE_2D, texture2);
-    // // set the texture wrapping parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // // set texture filtering parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // // load image, create texture and generate mipmaps
-    // data = stbi_load("resources/textures/smile.png", &width, &height, &nrChannels, 0);
-    // if (data)
-    // {
-    //     // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    //     glGenerateMipmap(GL_TEXTURE_2D);
-    // }
-    // else
-    // {
-    //     std::cout << "Failed to load texture" << std::endl;
-    // }
-    // stbi_image_free(data);
-
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    // -------------------------------------------------------------------------------------------
-    
-    // cube_shader.setInt("wall_texture", 0);
-    // ourShader.setInt("texture2", 1);
-
     float target_frame_rate = 60.0;
     float last_time = static_cast<float>(glfwGetTime());
+
+    Cube cube;
 
     // render loop
     // -----------
@@ -225,45 +170,21 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
         // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, wall_texture);
-        // glActiveTexture(GL_TEXTURE1);
-        // glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // activate shader
-        // cube_shader.use();
+        cube.bind_texture();
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
-        // glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // cube_shader.setMat4("projection", projection);
 
-        // camera/view transformation
-        // glm::mat4 view = camera.GetViewMatrix();
-        // cube_shader.setMat4("view", view);
-
-        // render boxes
-        // glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < cubePositions.size(); i++)
+        for (int i = 0; i < cubePositions.size(); i++)
         {
 
-            Cube c;
-            c.render(camera, cubePositions[i]);
+            cube.render(camera, cubePositions[i]);
 
-            // calculate the model matrix for each object and pass it to shader before drawing
-            // glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            // model = glm::translate(model, cubePositions[i]);
-            // model = glm::translate(model, glm::vec3(0.0, 0.5, 0.0));
-            // float angle = 20.0f * i;
-            // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            // cube_shader.setMat4("model", model);
-
-            // glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
         floor_shader.use();
         glBindVertexArray(floorVAO);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         floor_shader.setMat4("projection", projection);
 
         // camera/view transformation
