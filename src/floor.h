@@ -23,8 +23,7 @@ public:
     glm::mat4 mProjection;
     glm::mat4 mModel;
 
-    Floor(int mMazeSize) {
-        mMazeSize = mMazeSize;
+    Floor(int maze_size) : mMazeSize(maze_size) {
 
         float *floor_vertices;
         int floor_vertices_size;
