@@ -17,50 +17,86 @@
 class Cube {
 
 public:
-    Shader *mShader = nullptr;
+    Shader mShader = Shader("shaders/cube.vert", "shaders/cube.frag");
     unsigned int mVAO;
     unsigned int mVBO;
     glm::mat4 mProjection;
     glm::mat4 mModel;
+    unsigned int mWallTexture;
 
 
-    Cube(glm::vec3 position) {
-        mShader = new Shader("shaders/cube.vert", "shaders/cube.frag");
-        mShader->setInt("wall_texture", 0);
+    Cube() {
+
+        mShader.setInt("mWallTexture", 0);
 
         float *cube_vertices;
         int cube_vertices_size;
         std::tie(cube_vertices, cube_vertices_size) = Cube::get_vertices();
-        std::tie(mVAO, mVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
+        Cube::get_buffers(cube_vertices, cube_vertices_size);
 
-        mShader->use();
+        mShader.use();
         mProjection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-        mModel = glm::translate(glm::mat4(1.0f), position);
+        init_texture();
+
     }
 
     ~Cube() {
-        glDeleteVertexArrays(1, &mVAO);
-        glDeleteBuffers(1, &mVBO);
-
-        // delete mShader;
+        // TODO check why this is not working
+        // glDeleteBuffers(1, &mVBO);
+        // glDeleteVertexArrays(1, &mVAO);
     }
 
-    void render(Camera& camera) {
-        mShader->use();
+    void render(Camera& camera, glm::vec3 position) {
+        mShader.use();
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        mShader.setMat4("projection", projection);
 
         glm::mat4 view = camera.GetViewMatrix();
-        mShader->setMat4("projection", mProjection);
-        mShader->setMat4("view", view);
-        mShader->setMat4("model", mModel);
+        mShader.setMat4("view", view);
 
         glBindVertexArray(mVAO);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, position);
+
+        mShader.setMat4("model", model);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
     }
 
+    void bind_texture() {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mWallTexture);
+    }
+
 private:
+
+    void init_texture() {
+        glGenTextures(1, &mWallTexture);
+        glBindTexture(GL_TEXTURE_2D, mWallTexture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        // set texture filtering parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        int width, height, nrChannels;
+        stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+        unsigned char *data = stbi_load("resources/textures/brick_wall.jpg", &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else
+        {
+            std::cout << "Failed to load texture" << std::endl;
+        }
+        stbi_image_free(data);
+    }
 
     std::tuple<float*, int> get_vertices() {
         std::vector<float> vertices = {
@@ -115,14 +151,14 @@ private:
         return std::make_tuple(d_vertices, vertices.size());
     }
 
-    std::tuple<unsigned int, unsigned int> get_buffers(float *vertices, int n) {
-        unsigned int VBO, VAO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
+    void get_buffers(float *vertices, int n) {
 
-        glBindVertexArray(VAO);
+        glGenVertexArrays(1, &mVAO);
+        glGenBuffers(1, &mVBO);
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindVertexArray(mVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
         glBufferData(GL_ARRAY_BUFFER, n * sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         // position attribute
@@ -132,7 +168,6 @@ private:
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        return std::make_tuple(VAO, VBO);
     }
 
 };

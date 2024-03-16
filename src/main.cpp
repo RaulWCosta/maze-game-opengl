@@ -130,11 +130,6 @@ int main()
     std::tie(maze, maze_size) = get_maze();
 
     std::vector<glm::vec3> cubePositions = get_positions(maze, maze_size);
-    std::vector<Cube> cubes_list = std::vector<Cube>();
-
-    for (int i = 0; i < maze_size; i++) {
-        cubes_list.push_back(Cube(cubePositions[i]));
-    }
 
     // std::tie(cubeVAO, cubeVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
 
@@ -146,31 +141,32 @@ int main()
 
     // load and create a texture 
     // -------------------------
-    unsigned int wall_texture, texture2;
+    // unsigned int wall_texture;
+    unsigned int texture2;
     // texture 1
     // ---------
-    glGenTextures(1, &wall_texture);
-    glBindTexture(GL_TEXTURE_2D, wall_texture);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("resources/textures/brick_wall.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    // // glGenTextures(1, &wall_texture);
+    // // glBindTexture(GL_TEXTURE_2D, wall_texture);
+    // // set the texture wrapping parameters
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // // set texture filtering parameters
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // // load image, create texture and generate mipmaps
+    // int width, height, nrChannels;
+    // stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    // unsigned char *data = stbi_load("resources/textures/brick_wall.jpg", &width, &height, &nrChannels, 0);
+    // if (data)
+    // {
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    //     glGenerateMipmap(GL_TEXTURE_2D);
+    // }
+    // else
+    // {
+    //     std::cout << "Failed to load texture" << std::endl;
+    // }
+    // stbi_image_free(data);
     // // texture 2
     // // ---------
     // glGenTextures(1, &texture2);
@@ -204,6 +200,8 @@ int main()
     float target_frame_rate = 60.0;
     float last_time = static_cast<float>(glfwGetTime());
 
+    Cube cube;
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(camera.mWindow))
@@ -230,38 +228,17 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
         // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, wall_texture);
+
         // glActiveTexture(GL_TEXTURE1);
         // glBindTexture(GL_TEXTURE_2D, texture2);
+        cube.bind_texture();
 
-        // activate shader
-        // cube_shader.use();
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
-        // glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // cube_shader.setMat4("projection", projection);
-
-        // camera/view transformation
-        // glm::mat4 view = camera.GetViewMatrix();
-        // cube_shader.setMat4("view", view);
-
-        // render boxes
-        // glBindVertexArray(cubeVAO);
-        for (auto &cube: cubes_list)
+        for (int i = 0; i < cubePositions.size(); i++)
         {
 
-            cube.render(camera);
+            cube.render(camera, cubePositions[i]);
 
-            // calculate the model matrix for each object and pass it to shader before drawing
-            // glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            // model = glm::translate(model, cubePositions[i]);
-            // model = glm::translate(model, glm::vec3(0.0, 0.5, 0.0));
-            // float angle = 20.0f * i;
-            // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            // cube_shader.setMat4("model", model);
-
-            // glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
         floor_shader.use();
