@@ -20,8 +20,11 @@ public:
     Shader *mShader = nullptr;
     unsigned int mVAO;
     unsigned int mVBO;
+    glm::mat4 mProjection;
+    glm::mat4 mModel;
 
-    Cube() {
+
+    Cube(glm::vec3 position) {
         mShader = new Shader("shaders/cube.vert", "shaders/cube.frag");
         mShader->setInt("wall_texture", 0);
 
@@ -29,33 +32,35 @@ public:
         int cube_vertices_size;
         std::tie(cube_vertices, cube_vertices_size) = Cube::get_vertices();
         std::tie(mVAO, mVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
+
+        mShader->use();
+        mProjection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+        mModel = glm::translate(glm::mat4(1.0f), position);
     }
 
     ~Cube() {
         glDeleteVertexArrays(1, &mVAO);
         glDeleteBuffers(1, &mVBO);
 
-        delete mShader;
+        // delete mShader;
     }
 
-    void render(Camera& camera, glm::vec3 position) {
+    void render(Camera& camera) {
         mShader->use();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        mShader->setMat4("projection", projection);
 
         glm::mat4 view = camera.GetViewMatrix();
+        mShader->setMat4("projection", mProjection);
         mShader->setMat4("view", view);
+        mShader->setMat4("model", mModel);
 
         glBindVertexArray(mVAO);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, position);
-
-        mShader->setMat4("model", model);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
     }
+
+private:
 
     std::tuple<float*, int> get_vertices() {
         std::vector<float> vertices = {
@@ -130,11 +135,4 @@ public:
         return std::make_tuple(VAO, VBO);
     }
 
-    glm::mat4 get_model_mat(glm::vec3 position) {
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        model = glm::translate(model, position);
-        // float angle = 20.0f * i;
-        // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        return model;
-    }
 };

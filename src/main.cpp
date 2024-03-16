@@ -130,6 +130,11 @@ int main()
     std::tie(maze, maze_size) = get_maze();
 
     std::vector<glm::vec3> cubePositions = get_positions(maze, maze_size);
+    std::vector<Cube> cubes_list = std::vector<Cube>();
+
+    for (int i = 0; i < maze_size; i++) {
+        cubes_list.push_back(Cube(cubePositions[i]));
+    }
 
     // std::tie(cubeVAO, cubeVBO) = Cube::get_buffers(cube_vertices, cube_vertices_size);
 
@@ -243,11 +248,10 @@ int main()
 
         // render boxes
         // glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < cubePositions.size(); i++)
+        for (auto &cube: cubes_list)
         {
 
-            Cube c;
-            c.render(camera, cubePositions[i]);
+            cube.render(camera);
 
             // calculate the model matrix for each object and pass it to shader before drawing
             // glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -263,7 +267,7 @@ int main()
         floor_shader.use();
         glBindVertexArray(floorVAO);
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         floor_shader.setMat4("projection", projection);
 
         // camera/view transformation
