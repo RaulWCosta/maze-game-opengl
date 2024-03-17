@@ -11,10 +11,13 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
+#include <memory>
 
 #include "shader_s.h"
 
-class Cube {
+
+
+class CubeComponent {
 
 public:
     Shader mShader = Shader("shaders/cube.vert", "shaders/cube.frag");
@@ -23,16 +26,17 @@ public:
     glm::mat4 mProjection;
     glm::mat4 mModel;
     unsigned int mWallTexture;
+    float mDiagLength = 1.0f;
 
 
-    Cube() {
+    CubeComponent() {
 
         mShader.setInt("wall_texture", 0);
 
         float *cube_vertices;
         int cube_vertices_size;
-        std::tie(cube_vertices, cube_vertices_size) = Cube::get_vertices();
-        Cube::get_buffers(cube_vertices, cube_vertices_size);
+        std::tie(cube_vertices, cube_vertices_size) = get_vertices();
+        get_buffers(cube_vertices, cube_vertices_size);
 
         mShader.use();
         mProjection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -41,7 +45,7 @@ public:
 
     }
 
-    ~Cube() {
+    ~CubeComponent() {
         // TODO check why this is not working
         // glDeleteBuffers(1, &mVBO);
         // glDeleteVertexArrays(1, &mVAO);
@@ -68,6 +72,23 @@ public:
     void bind_texture() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, mWallTexture);
+    }
+
+    bool collide(glm::vec3 obj_pos, float diag_length) {
+
+        // // (Math.abs(p1.x - p2.x) < r && Math.abs(p1.y - p2.y) < r)
+        // float r1_width = mDiagLength /
+
+        // // If one rectangle is on left side of the other
+        // if (rect1.x + rect1.width < rect2.x || rect2.x + rect2.width < rect1.x)
+        //     return false;
+
+        // // If one rectangle is above the other
+        // if (rect1.y + rect1.height < rect2.y || rect2.y + rect2.height < rect1.y)
+        //     return false;
+
+        // Rectangles overlap
+        return true;
     }
 
 private:
@@ -167,6 +188,31 @@ private:
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
+    }
+
+};
+
+
+class Cube {
+
+public:
+    std::shared_ptr<CubeComponent> mCubeComponent;
+    glm::vec3 mPosition;
+
+    Cube(glm::vec3 position) : mPosition(position) {
+        mCubeComponent = std::make_shared<CubeComponent>();
+    }
+
+    void render(Camera &camera) {
+        this->mCubeComponent->render(camera, this->mPosition);
+    }
+
+    void bind_texture() {
+        this->mCubeComponent->bind_texture();
+    }
+
+    void collide(glm::vec3 obj_pos, float diag_length) {
+        this->mCubeComponent->collide(obj_pos, diag_length);
     }
 
 };

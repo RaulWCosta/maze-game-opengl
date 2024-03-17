@@ -118,7 +118,13 @@ int main()
     float target_frame_rate = 60.0;
     float last_time = static_cast<float>(glfwGetTime());
 
-    Cube cube;
+    std::vector<Cube> cubes;
+    for (const auto& position : cubePositions)
+    {
+        cubes.emplace_back(position);
+    }
+
+
     Floor floor = Floor(maze_size);
 
     // render loop
@@ -146,11 +152,12 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
-        cube.bind_texture();
+        // TODO improve this
+        cubes[0].mCubeComponent->bind_texture();
 
-        for (int i = 0; i < cubePositions.size(); i++)
+        for (auto c : cubes)
         {
-            cube.render(camera, cubePositions[i]);
+            c.render(camera);
         }
 
         floor.render(camera);
