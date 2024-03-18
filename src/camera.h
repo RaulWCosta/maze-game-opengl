@@ -66,7 +66,7 @@ public:
     }
 
     void init_window(int screen_width, int screen_height) {
-        mWindow = glfwCreateWindow(screen_width, screen_height, "LearnOpenGL", NULL, NULL);
+        mWindow = glfwCreateWindow(screen_width, screen_height, "Maze Game", NULL, NULL);
 
         if (mWindow == NULL)
         {
