@@ -26,8 +26,6 @@ public:
     glm::mat4 mProjection;
     glm::mat4 mModel;
     unsigned int mWallTexture;
-    float mDiagLength = 1.0f;
-
 
     CubeComponent() {
 
@@ -72,23 +70,6 @@ public:
     void bind_texture() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, mWallTexture);
-    }
-
-    bool collide(glm::vec3 obj_pos, float diag_length) {
-
-        // // (Math.abs(p1.x - p2.x) < r && Math.abs(p1.y - p2.y) < r)
-        // float r1_width = mDiagLength /
-
-        // // If one rectangle is on left side of the other
-        // if (rect1.x + rect1.width < rect2.x || rect2.x + rect2.width < rect1.x)
-        //     return false;
-
-        // // If one rectangle is above the other
-        // if (rect1.y + rect1.height < rect2.y || rect2.y + rect2.height < rect1.y)
-        //     return false;
-
-        // Rectangles overlap
-        return true;
     }
 
 private:
@@ -198,6 +179,7 @@ class Cube {
 public:
     std::shared_ptr<CubeComponent> mCubeComponent;
     glm::vec3 mPosition;
+    float mDiagLength = 1.0f;
 
     Cube(glm::vec3 position) : mPosition(position) {
         mCubeComponent = std::make_shared<CubeComponent>();
@@ -209,10 +191,6 @@ public:
 
     void bind_texture() {
         this->mCubeComponent->bind_texture();
-    }
-
-    void collide(glm::vec3 obj_pos, float diag_length) {
-        this->mCubeComponent->collide(obj_pos, diag_length);
     }
 
 };

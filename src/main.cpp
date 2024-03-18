@@ -14,6 +14,7 @@
 #include "maze.h"
 #include "cube.h"
 #include "floor.h"
+#include "collision.h"
 
 #include <iostream>
 #include <algorithm>
@@ -50,26 +51,25 @@ glm::vec3 get_movement_from_input(GLFWwindow *window) {
 void move_camera(GLFWwindow *window, float delta_time, char **maze, int maze_size)
 {
     Camera* camera = (Camera *)glfwGetWindowUserPointer(window);
-    float mov_delta = 0.01f;
     glm::vec3 movement_vec = get_movement_from_input(window);
 
-    if (glm::length(movement_vec) <= mov_delta) {
+    if (glm::length(movement_vec) <= 0.01f) {
         return;
     }
-    // movement_vec.y = 0.0f;
+    movement_vec.y = 0.0f;
     movement_vec = glm::normalize(movement_vec);
 
-    // glm::vec3 collision_vector4 = checkCollision(
-    //     camera.Position,
-    //     movement_vec,
-    //     0.1f,
-    //     maze,
-    //     maze_size
-    // );
+    glm::vec3 collision_vec = checkCollision(
+        camera->Position,
+        movement_vec,
+        delta_time * camera->MovementSpeed,
+        maze,
+        maze_size
+    );
 
-    // movement_vec = collision_vector4 * movement_vec;
+    movement_vec = collision_vec * movement_vec;
 
-    if (glm::length(movement_vec) <= mov_delta) {
+    if (glm::length(movement_vec) <= 0.01f) {
         return;
     }
     movement_vec = (delta_time * camera->MovementSpeed) * glm::normalize(movement_vec);

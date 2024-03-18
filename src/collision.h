@@ -7,14 +7,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image/stb_image.h>
 
-glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, char** maze, int maze_size) {
-    // get potential collision cubes
-    // check if collides with any
-    float step = 0.5;
+#include <iostream>
+#include <tuple>
+#include <vector>
 
-}
-
-
+#include "maze.h"
 
 
 bool rectCollide(glm::vec3 obj_pos, float obj_size, glm::vec3 block_pos, float block_size) {
@@ -36,11 +33,11 @@ bool rectCollide(glm::vec3 obj_pos, float obj_size, glm::vec3 block_pos, float b
     return collide_x && collide_z;
 }
 
-bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int objectSize, int blockSize) {
+bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, float objectSize, float blockSize) {
     bool collides = false;
 
     int pos_i, pos_j;
-    std::tie(pos_i, pos_j) = Cube::get_indexes_from_position(pos.x, pos.z, maze_size);
+    std::tie(pos_i, pos_j) = get_indexes_from_position(pos.x, pos.z, maze_size);
 
     std::vector<std::tuple<int, int>> deltas = {
         {0, 0},
@@ -53,9 +50,7 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int obje
         {1, 0},
         {1, 1}
     };
-    std::cout << "----------------------------------" << std::endl;
-    std::cout << "obj pos = " << glm::to_string(pos) << std::endl;
-    std::cout << "obj indices = " << pos_i << ", " << pos_j << std::endl;
+
     for (const auto& delta : deltas) {
         int val1 = std::get<0>(delta);
         int val2 = std::get<1>(delta);
@@ -64,65 +59,52 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, int obje
             continue;
 
         if (maze[pos_i + val1][pos_j + val2] == 'x') {
-            glm::vec3 block = Cube::get_position_from_indexes(pos_i + val1, pos_j + val2, maze_size);
+            glm::vec3 block = get_position_from_indexes(pos_i + val1, pos_j + val2, maze_size);
             collides = collides || rectCollide(pos, objectSize, block, blockSize);
-            std::cout << "blockpos = " << pos_i + val1 << ", " << pos_j + val2 << std::endl;
-            std::cout << "block vec = " << glm::to_string(block) << std::endl;
-            std::cout << "val1 = " << val1 << " val2 = " << val2 << " collides = " << collides << std::endl;
         }
     }
-
 
     return collides;
 }
 
-glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float delta, char** maze, int maze_size) {
-    // glm::vec3 collisionVector = glm::vec3(0.0f);
+glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float total_movement, char** maze, int maze_size) {
+
     float mov_delta = 0.05f;
     float blockSize = 1.05f;
-    float objectSize = 0.2;
-    
-    glm::vec3 newPos = oldPos + (movement_vec * delta);
-    
-    // std::cout << "mov vec; " << glm::to_string(movement_vec) << std::endl;
+    float objectSize = 0.3;
 
-    glm::vec3 movement_vec_cp = movement_vec;
-    if (glm::length(movement_vec_cp) > mov_delta) {
-        movement_vec_cp = glm::normalize(movement_vec_cp);
-        newPos = oldPos + (movement_vec_cp * delta);
-        if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
-            // no collision
-            // std::cout << "no collision default" << std::endl;
-            return glm::vec3(1.0, 0.0f, 1.0f);
-        }
+    glm::vec3 newPos = oldPos + (movement_vec * total_movement);
+
+
+    if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
+        // no collision
+
+        return glm::vec3(1.0, 0.0f, 1.0f);
     }
 
+    // collided with something!
+
+    bool collided_x = false;
+    bool collided_z = false;
+
     // test moving in x direction
-    movement_vec_cp = movement_vec;
-    movement_vec_cp.z = 0.0;
-    if (glm::length(movement_vec_cp) > mov_delta) {
-        movement_vec_cp = glm::normalize(movement_vec_cp);
-        newPos = oldPos + (movement_vec_cp * delta);
-        if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
-            // no collision
-            // std::cout << "no collision x" << std::endl;
-            return glm::vec3(1.0, 0.0f, 0.0f);
-        }
+    glm::vec3 newPos_x = oldPos + (glm::normalize(movement_vec * glm::vec3(1.0f, 0.0f, 0.0f)) * total_movement);
+    if (check_position_collides(newPos_x, maze, maze_size, objectSize, blockSize)) {
+        // collides x
+        collided_x = true;
     }
 
     // test moving in z direction
-    movement_vec_cp = movement_vec;
-    movement_vec_cp.x = 0.0;
-    if (glm::length(movement_vec_cp) > mov_delta) {
-        movement_vec_cp = glm::normalize(movement_vec_cp);
-        newPos = oldPos + (movement_vec_cp * delta);
-        if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
-            // no collision
-            // std::cout << "no collision z" << std::endl;
-            return glm::vec3(0.0, 0.0f, 1.0f);
-        }
+    glm::vec3 newPos_z = oldPos + (glm::normalize(movement_vec * glm::vec3(0.0f, 0.0f, 1.0f)) * total_movement);
+    if (check_position_collides(newPos_z, maze, maze_size, objectSize, blockSize)) {
+        // collides z
+        collided_z = true;
     }
 
-    // std::cout << "-----------------" << std::endl;
-    return glm::vec3(0.0f, 0.0f, 0.0f);
+    if (collided_x && collided_z)
+        return glm::vec3(0.0f, 0.0f, 0.0f);
+    else if (collided_x)
+        return glm::vec3(0.0f, 0.0f, 1.0f);
+    else if (collided_z)
+        return glm::vec3(1.0f, 0.0f, 0.0f);
 }
