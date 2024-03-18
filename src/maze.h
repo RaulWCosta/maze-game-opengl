@@ -188,7 +188,7 @@ std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
 
 std::tuple<char **, int> get_maze() {
 
-    int n = 8;
+    int n = 32;
 
     if (n % 2 == 0)
         n++;

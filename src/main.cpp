@@ -92,13 +92,8 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // glfw window creation
-    // --------------------
-
     Camera camera(SCR_WIDTH, SCR_HEIGHT);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -124,16 +119,12 @@ int main()
         cubes.emplace_back(position);
     }
 
-
     Floor floor = Floor(maze_size);
 
     // render loop
-    // -----------
     while (!glfwWindowShouldClose(camera.mWindow))
     {
-        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        // per-frame time logic
-        // --------------------
+
         float current_time = static_cast<float>(glfwGetTime());
         float delta_time = current_time - last_time;
         if(delta_time >= 1.0 / target_frame_rate) {
@@ -142,13 +133,9 @@ int main()
             continue;
         }
 
-        // input
-        // -----
         get_input(camera.mWindow);
         move_camera(camera.mWindow, delta_time, maze, maze_size);
 
-        // render
-        // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
