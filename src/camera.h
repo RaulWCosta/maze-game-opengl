@@ -72,7 +72,7 @@ public:
         {
             std::cout << "Failed to create GLFW mWindow" << std::endl;
             glfwTerminate();
-            exit -1;
+            exit(1);
         }
         glfwMakeContextCurrent(mWindow);
         glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);

@@ -16,18 +16,42 @@
 #include "shader_s.h"
 
 
+class Cube {
 
-class CubeComponent {
+public:
+    glm::vec3 mPosition;
+    Shader mShader;
+    glm::mat4 mProjection;
+
+    Cube(const glm::vec3& position, const Shader& shader, const glm::mat4& projection)
+        : mPosition(position), mShader(shader), mProjection(projection) {}
+
+    void render(Camera &camera) {
+        mShader.setMat4("projection", mProjection);
+
+        glm::mat4 view = camera.GetViewMatrix();
+        mShader.setMat4("view", view);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, mPosition);
+
+        mShader.setMat4("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+};
+
+class CubeCollection {
 
 public:
     Shader mShader = Shader("shaders/cube.vert", "shaders/cube.frag");
     unsigned int mVAO;
     unsigned int mVBO;
-    glm::mat4 mProjection;
     glm::mat4 mModel;
     unsigned int mWallTexture;
+    std::vector<Cube> mCubes;
 
-    CubeComponent() {
+    CubeCollection(std::vector<glm::vec3> positions) {
 
         mShader.setInt("wall_texture", 0);
 
@@ -37,33 +61,31 @@ public:
         get_buffers(cube_vertices, cube_vertices_size);
 
         mShader.use();
-        mProjection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
         init_texture();
 
+        for (const auto& position : positions)
+        {
+            mCubes.push_back(Cube(position, mShader, projection));
+        }
+
     }
 
-    ~CubeComponent() {
+    ~CubeCollection() {
         // TODO check why this is not working
         // glDeleteBuffers(1, &mVBO);
         // glDeleteVertexArrays(1, &mVAO);
     }
 
-    void render(Camera& camera, glm::vec3 position) {
+    void render(Camera& camera) {
+        bind_texture();
         mShader.use();
         glBindVertexArray(mVAO);
-        
-        mShader.setMat4("projection", mProjection);
 
-        glm::mat4 view = camera.GetViewMatrix();
-        mShader.setMat4("view", view);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, position);
-
-        mShader.setMat4("model", model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (Cube c : mCubes) {
+            c.render(camera);
+        }
 
     }
 
@@ -169,28 +191,6 @@ private:
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-    }
-
-};
-
-
-class Cube {
-
-public:
-    std::shared_ptr<CubeComponent> mCubeComponent;
-    glm::vec3 mPosition;
-    float mDiagLength = 1.0f;
-
-    Cube(glm::vec3 position) : mPosition(position) {
-        mCubeComponent = std::make_shared<CubeComponent>();
-    }
-
-    void render(Camera &camera) {
-        this->mCubeComponent->render(camera, this->mPosition);
-    }
-
-    void bind_texture() {
-        this->mCubeComponent->bind_texture();
     }
 
 };

@@ -1,5 +1,4 @@
 
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -81,8 +80,6 @@ void move_camera(GLFWwindow *window, float delta_time, char **maze, int maze_siz
 
 int main()
 {
-    // glfw: initialize and configure
-    // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -113,11 +110,7 @@ int main()
     float target_frame_rate = 60.0;
     float last_time = static_cast<float>(glfwGetTime());
 
-    std::vector<Cube> cubes;
-    for (const auto& position : cubePositions)
-    {
-        cubes.emplace_back(position);
-    }
+    CubeCollection cube_collection = CubeCollection(cubePositions);
 
     Floor floor = Floor(maze_size);
 
@@ -139,13 +132,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
-        // TODO improve this
-        cubes[0].mCubeComponent->bind_texture();
-
-        for (auto c : cubes)
-        {
-            c.render(camera);
-        }
+        cube_collection.render(camera);
 
         floor.render(camera);
 
