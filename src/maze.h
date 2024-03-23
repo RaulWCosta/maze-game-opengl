@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "settings.h"
+
 bool is_wall_valid(char** maze, int i, int j) {
 
     int num_visited_neighboors = 0;
@@ -174,7 +176,7 @@ std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
 
 std::tuple<char **, int> get_maze() {
 
-    int n = 48;
+    unsigned int n = MAZE_SIZE;
 
     if (n % 2 == 0)
         n++;
