@@ -1,4 +1,2 @@
 
-https://learnopengl.com/Advanced-OpenGL/Instancing
-
-transform func names to snake case
+- [ ] https://learnopengl.com/Advanced-OpenGL/Instancing

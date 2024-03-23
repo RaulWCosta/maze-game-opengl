@@ -45,8 +45,7 @@ glm::vec3 get_movement_from_input(GLFWwindow *window) {
     return movement_vec;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
+
 void move_camera(GLFWwindow *window, float delta_time, char **maze, int maze_size)
 {
     Camera* camera = (Camera *)glfwGetWindowUserPointer(window);
@@ -74,7 +73,6 @@ void move_camera(GLFWwindow *window, float delta_time, char **maze, int maze_siz
     movement_vec = (delta_time * camera->MovementSpeed) * glm::normalize(movement_vec);
 
     camera->Position += movement_vec;
-
 }
 
 
@@ -141,6 +139,10 @@ int main()
         glfwSwapBuffers(camera.mWindow);
         glfwPollEvents();
     }
+
+    for (int i = 0; i < maze_size; i++)
+        delete maze[i];
+    delete maze;
 
     glfwTerminate();
     return 0;

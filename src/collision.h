@@ -33,7 +33,7 @@ bool rectCollide(glm::vec3 obj_pos, float obj_size, glm::vec3 block_pos, float b
     return collide_x && collide_z;
 }
 
-bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, float objectSize, float blockSize) {
+bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, float object_size, float block_size) {
     bool collides = false;
 
     int pos_i, pos_j;
@@ -60,7 +60,7 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, float ob
 
         if (maze[pos_i + val1][pos_j + val2] == 'x') {
             glm::vec3 block = get_position_from_indexes(pos_i + val1, pos_j + val2, maze_size);
-            collides = collides || rectCollide(pos, objectSize, block, blockSize);
+            collides = collides || rectCollide(pos, object_size, block, block_size);
         }
     }
 
@@ -69,16 +69,14 @@ bool check_position_collides(glm::vec3 pos, char **maze, int maze_size, float ob
 
 glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float total_movement, char** maze, int maze_size) {
 
-    float mov_delta = 0.05f;
-    float blockSize = 1.05f;
-    float objectSize = 0.3;
+    float block_size = 1.05f;
+    float object_size = 0.3;
 
     glm::vec3 newPos = oldPos + (movement_vec * total_movement);
 
 
-    if (!check_position_collides(newPos, maze, maze_size, objectSize, blockSize)) {
+    if (!check_position_collides(newPos, maze, maze_size, object_size, block_size)) {
         // no collision
-
         return glm::vec3(1.0, 0.0f, 1.0f);
     }
 
@@ -89,14 +87,14 @@ glm::vec3 checkCollision(glm::vec3 oldPos, glm::vec3 movement_vec, float total_m
 
     // test moving in x direction
     glm::vec3 newPos_x = oldPos + (glm::normalize(movement_vec * glm::vec3(1.0f, 0.0f, 0.0f)) * total_movement);
-    if (check_position_collides(newPos_x, maze, maze_size, objectSize, blockSize)) {
+    if (check_position_collides(newPos_x, maze, maze_size, object_size, block_size)) {
         // collides x
         collided_x = true;
     }
 
     // test moving in z direction
     glm::vec3 newPos_z = oldPos + (glm::normalize(movement_vec * glm::vec3(0.0f, 0.0f, 1.0f)) * total_movement);
-    if (check_position_collides(newPos_z, maze, maze_size, objectSize, blockSize)) {
+    if (check_position_collides(newPos_z, maze, maze_size, object_size, block_size)) {
         // collides z
         collided_z = true;
     }

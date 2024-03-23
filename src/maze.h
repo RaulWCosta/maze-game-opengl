@@ -53,7 +53,6 @@ bool is_wall_valid(char** maze, int i, int j) {
 }
 
 char **random_prim_algorithm(int n) {
-    // srand(time(NULL));
     srand(42);
     char** maze = new char*[n];
 
@@ -126,7 +125,6 @@ char **random_prim_algorithm(int n) {
     return maze;
 }
 
-
 void add_init_location(char **maze, int n) {
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
@@ -181,16 +179,16 @@ std::tuple<char **, int> get_maze() {
     if (n % 2 == 0)
         n++;
 
-    char** mazeOnHeap = random_prim_algorithm(n);
+    char** maze_on_heap = random_prim_algorithm(n);
 
-    add_init_location(mazeOnHeap, n);
+    add_init_location(maze_on_heap, n);
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            std::cout << mazeOnHeap[i][j];
+            std::cout << maze_on_heap[i][j];
         }
         std::cout << std::endl;
     }
 
-    return std::make_tuple(mazeOnHeap, n);
+    return std::make_tuple(maze_on_heap, n);
 }
