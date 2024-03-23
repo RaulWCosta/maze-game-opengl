@@ -2,6 +2,8 @@
 
 This project is my small attempt to get my hands dirty with OpenGL :)
 
+Huge thanks to [Learn OpenGL](https://learnopengl.com/)
+
 ## Build
 
 This project requires [cmake](https://cmake.org/) and a C++ compiler.
