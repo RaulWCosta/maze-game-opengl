@@ -1,6 +1,6 @@
 # Maze Game
 
-This small project is my attempt to get my ands dirty with OpenGL :)
+This project is my small attempt to get my hands dirty with OpenGL :)
 
 ## Build
 
