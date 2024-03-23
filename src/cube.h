@@ -53,8 +53,6 @@ public:
 
     CubeCollection(std::vector<glm::vec3> positions) {
 
-        mShader.setInt("wall_texture", 0);
-
         float *cube_vertices;
         int cube_vertices_size;
         std::tie(cube_vertices, cube_vertices_size) = get_vertices();
@@ -187,6 +185,7 @@ private:
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+
         // texture coord attribute
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);

@@ -1,8 +1,4 @@
-[x] fix collision
-[x] make code prettier
 
 https://learnopengl.com/Advanced-OpenGL/Instancing
 
-[x] improve rendering time
-change textures
 transform func names to snake case

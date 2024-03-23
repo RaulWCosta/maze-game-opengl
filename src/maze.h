@@ -151,15 +151,10 @@ glm::vec3 get_position_from_indexes(int i, int j, int maze_size) {
 
 glm::vec3 get_camera_position(char **maze, int maze_size) {
 
-    for (int i = 0; i < maze_size; i++) {
-        for (int j = 0; j < maze_size; j++) {
-            // std::cout << maze[i][j] << std::endl; 
-
-            if (maze[i][j] == 'c') {
+    for (int i = 0; i < maze_size; i++)
+        for (int j = 0; j < maze_size; j++)
+            if (maze[i][j] == 'c')
                 return get_position_from_indexes(i, j, maze_size);
-            }
-        }
-    }
 }
 
 std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
@@ -168,17 +163,10 @@ std::vector<glm::vec3> get_positions(char **maze, int maze_size) {
 
     for (int i = 0; i < maze_size; i++) {
         for (int j = 0; j < maze_size; j++) {
-            // std::cout << maze[i][j] << std::endl; 
 
             if (maze[i][j] == 'x') {
                 glm::vec3 pos = get_position_from_indexes(i, j, maze_size);
                 cubePositions.push_back(pos);
-
-                // int calc_i, calc_j;
-                // std::tie(calc_i, calc_j) = get_indexes_from_position(maze_size, pos.x, pos.z);
-
-                // assert(calc_i == i);
-                // assert(calc_j == j);
             }
         }
     }
