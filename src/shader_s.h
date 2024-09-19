@@ -14,14 +14,14 @@ class Shader
 {
 public:
     unsigned int ID;
-    const char* vertexPath;
-    const char* fragmentPath;
+    std::string vertexPath;
+    std::string fragmentPath;
 
     Shader();
 
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Shader(const char* vertexPath, const char* fragmentPath)
+    Shader(std::string vertexPath, std::string fragmentPath)
     {
         // this->vertexPath = vertexPath;
         // this->fragmentPath = fragmentPath;
@@ -35,9 +35,11 @@ public:
         fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         try 
         {
+            std::string relative_path = "../../../";
+
             // open files
-            vShaderFile.open(vertexPath);
-            fShaderFile.open(fragmentPath);
+            vShaderFile.open(relative_path + vertexPath);
+            fShaderFile.open(relative_path + fragmentPath);
             std::stringstream vShaderStream, fShaderStream;
             // read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();

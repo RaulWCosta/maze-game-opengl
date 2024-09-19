@@ -10,6 +10,7 @@ add_library(stb_image STATIC ${CMAKE_SOURCE_DIR}/dependencies/include/stb_image/
 
 set(OpenGL_GL_PREFERENCE "GLVND")
 
+find_package(glfw3 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 
 add_executable(maze_game src/main.cpp)

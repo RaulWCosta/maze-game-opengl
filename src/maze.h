@@ -93,7 +93,7 @@ char **random_prim_algorithm(int n) {
 
         // add choosen wall on top of stack
         int random_wall = rand() % walls_list.size();
-        std::tuple aux = walls_list[walls_list.size() - 1];
+        std::tuple<int, int> aux = walls_list[walls_list.size() - 1];
         walls_list[walls_list.size() - 1] = walls_list[random_wall];
         walls_list[random_wall] = aux;
 
