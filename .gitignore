@@ -4,3 +4,7 @@ build/
 CMakeFiles/
 CMakeCache.txt
 TODO.txt
+MazeGame/
+.vs/
+./vcpkg_installed
+/vcpkg_installed
